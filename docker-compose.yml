@@ -1,0 +1,27 @@
+version: '3'
+services:
+  angular.test:
+    build:
+      context: ./client/.devcontainer
+      dockerfile: Dockerfile
+    working_dir: /var/www/html/client
+    user: node
+    command: sh -c "npm install && ng serve --host 0.0.0.0 --public-host 'localhost'"
+    expose:
+      - '4200'
+    volumes:
+      - './:/var/www/html'
+    networks:
+      - attendance
+  nginx:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./dev-proxy/data/data:/var/www/html/data
+      - ./dev-proxy/data/conf.d:/etc/nginx/conf.d
+    networks:
+      - attendance
+networks:
+  attendance:
