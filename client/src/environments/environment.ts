@@ -1,4 +1,5 @@
 export const environment = {
     production: false,
-    serverAddress: "/"
+    serverAddress: "/",
+    configStorage: localStorage
 }

@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { RescueResponse, RobotAssignmentResponse, RobotNumber, RobotPlanResponse, SolResponse } from '../models/remote.model';
+import { RescueResponse, RobotAssignmentResponse, RobotId, RobotPlanResponse, SolResponse } from '../models/remote.model';
 import { RobotPlan } from '../models/robot-plan.model';
 
 @Injectable({
@@ -21,7 +21,7 @@ export class RemoteService {
     return this.httpClient.get<SolResponse>(environment.serverAddress + "sol");
   }
 
-  public sendPlan(robot: RobotNumber, plan: RobotPlan): Observable<RobotPlanResponse> {
+  public sendPlan(robot: RobotId, plan: RobotPlan): Observable<RobotPlanResponse> {
     let body = {
       robot,
       plan
@@ -29,7 +29,7 @@ export class RemoteService {
     return this.httpClient.post<RobotPlanResponse>(environment.serverAddress + "plan", body);
   }
 
-  public sendRescue(robot: RobotNumber): Observable<RescueResponse> {
+  public sendRescue(robot: RobotId): Observable<RescueResponse> {
     let body = {
       robot
     };

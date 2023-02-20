@@ -1,6 +1,4 @@
-import { RobotPlan } from "./robot-plan.model";
-
-export type RobotNumber = number;
+export type RobotId = string;
 
 export enum Status {
     OK = 'ok',
@@ -12,13 +10,13 @@ export interface Response {
 }
 
 export interface RobotAssignmentResponse extends Response {
-    robot_number: RobotNumber
+    robot_number: RobotId
 }
 
 export interface SolResponse extends Response {
-    sol: number,
-    total_sols: number,
-    mins_per_sol: number
+    sol: string,
+    total_sols: string,
+    mins_per_sol: string
 }
 
 export interface RobotPlanResponse extends Response {
