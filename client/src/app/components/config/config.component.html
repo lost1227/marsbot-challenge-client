@@ -1,1 +1,32 @@
-<p>config works!</p>
+<ng-container [ngSwitch]="state|async">
+
+<ng-container *ngSwitchCase="stateType.SET_NAME">
+    <mat-card>
+    <mat-card-content>
+        <form class="configrow" [formGroup]="nameForm" (ngSubmit)="updateName()">
+            <mat-form-field appearance="fill">
+                <mat-label>First Name</mat-label>
+                <input matInput formControlName="name">
+                <mat-error>Name cannot be empty</mat-error>
+            </mat-form-field>
+            <button mat-raised-button color="accent" (click)="updateName()">Save</button>
+        </form>
+    </mat-card-content>
+    </mat-card>
+</ng-container>
+
+<ng-container *ngSwitchCase="stateType.LOAD_RID">
+    <app-spinner></app-spinner>
+</ng-container>
+
+<ng-container *ngSwitchCase="stateType.SHOW_CONFIG">
+    <mat-card *ngIf="currConfig | async as config">
+    <mat-card-content>
+        <p>Welcome {{config.name}}!</p>
+        <p>You will be driving Robot {{config.robotId}}.</p>
+        <a routerLink='/plan' mat-raised-button color="accent">Start driving</a>
+        <button mat-stroked-button (click)="resetConfig()">Clear</button>
+    </mat-card-content>
+    </mat-card>
+</ng-container>
+</ng-container>
