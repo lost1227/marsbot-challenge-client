@@ -5,6 +5,7 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { AppComponent } from './app.component';
 import { ConfigComponent } from './components/config/config.component';
+import { PlannerComponent } from './components/planner/planner.component';
 import { SpinnerComponent } from './components/reuse/spinner/spinner.component';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -17,12 +18,17 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { PlanStepComponent } from './components/planner/plan-step/plan-step.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     ConfigComponent,
-    SpinnerComponent
+    SpinnerComponent,
+    PlannerComponent,
+    PlanStepComponent
   ],
   imports: [
     BrowserModule,
@@ -35,7 +41,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatInputModule,
     MatFormFieldModule,
     MatButtonModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatIconModule,
+    MatCheckboxModule
   ],
   providers: [],
   bootstrap: [AppComponent]

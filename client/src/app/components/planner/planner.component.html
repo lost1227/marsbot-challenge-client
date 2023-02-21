@@ -1,0 +1,63 @@
+<mat-card>
+    <mat-card-header>Move</mat-card-header>
+    <mat-card-content>
+        <mat-form-field>
+            <mat-label>Steps</mat-label>
+            <input matInput [formControl]="moveStepsControl">
+        </mat-form-field>
+        <button mat-fab color="accent" (click)="addMove(dirs.UP)">
+            <mat-icon>arrow_upward</mat-icon>
+        </button>
+        <button mat-fab color="accent" (click)="addMove(dirs.DOWN)">
+            <mat-icon>arrow_downward</mat-icon>
+        </button>
+    </mat-card-content>
+</mat-card>
+
+<mat-card>
+    <mat-card-header>Turn</mat-card-header>
+    <mat-card-content>
+        <mat-form-field>
+            <mat-label>Steps</mat-label>
+            <input matInput [formControl]="turnStepsControl">
+        </mat-form-field>
+        <button mat-fab color="accent" (click)="addTurn(dirs.LEFT)">
+            <mat-icon>arrow_back</mat-icon>
+        </button>
+        <button mat-fab color="accent" (click)="addTurn(dirs.RIGHT)">
+            <mat-icon>arrow_forward</mat-icon>
+        </button>
+        <mat-checkbox [formControl]="turnScaleControl">degrees</mat-checkbox>
+    </mat-card-content>
+</mat-card>
+
+<mat-card>
+    <mat-card-header>Grab</mat-card-header>
+    <mat-card-content>
+        <button mat-raised-button color="accent" (click)="addGrab('Grab')">Grab</button>
+        <button mat-raised-button color="accent" (click)="addGrab('Release')">Release</button>
+    </mat-card-content>
+</mat-card>
+
+<mat-card>
+    <mat-card-header>Plan</mat-card-header>
+<mat-card-content>
+    <div *ngIf="currPlan | async as plan">
+        <app-plan-step *ngFor="let step of plan" [planStep]="step" [turnScale]="getTurnScale()"></app-plan-step>
+    </div>
+    <button mat-fab color="warn" (click)="popPlanStep()">
+        <mat-icon>backspace</mat-icon>
+    </button>
+</mat-card-content>
+</mat-card>
+
+<mat-card>
+<mat-card-content>
+    <div *ngIf="currPlan | async as plan">
+        <button mat-raised-button color="primary" (click)="sendPlan()" [disabled]="plan.length == 0">
+            Send Plan to Robot on Mars
+        </button>
+        <button mat-raised-button color="primary" (click)="requestRescue()">Rescue</button>
+    </div>
+</mat-card-content>
+</mat-card>
