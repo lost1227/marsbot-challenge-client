@@ -1,0 +1,7 @@
+marsbot-challenge-client/
+nginx-*/
+temp/
+logs/
+
+conf/mime.types
+run.bat
