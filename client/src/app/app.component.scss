@@ -1,6 +1,24 @@
+$pageWidth: 740px;
+
 #mainPage {
-    max-width: 740px;
+    max-width: $pageWidth;
     margin: auto;
 
     padding: 10px;
 }
+#toolbar-container {
+    width: 100%;
+    max-width: $pageWidth;
+    margin: auto;
+}
+
+#app-title {
+    color: inherit;
+    text-decoration: inherit;
+    font-weight: 400;
+}
+
+#app-title:hover {
+    text-decoration: underline;
+}
+

@@ -1,73 +1,69 @@
 <ng-container [ngSwitch]="state | async">
 <ng-container *ngSwitchCase="stateType.PLANNING">
-    <h1 *ngIf="solMessage | async as msg">{{msg}}</h1>
-    <mat-card>
-        <mat-card-header>Move</mat-card-header>
-        <mat-card-content>
-            <mat-form-field>
-                <mat-label>Steps</mat-label>
-                <input matInput [formControl]="moveStepsControl">
-            </mat-form-field>
-            <button mat-fab color="accent" (click)="addMove(dirs.UP)">
-                <mat-icon>arrow_upward</mat-icon>
-            </button>
-            <button mat-fab color="accent" (click)="addMove(dirs.DOWN)">
-                <mat-icon>arrow_downward</mat-icon>
-            </button>
-        </mat-card-content>
-    </mat-card>
-
-    <mat-card>
-        <mat-card-header>Turn</mat-card-header>
-        <mat-card-content>
-            <mat-form-field>
-                <mat-label>Steps</mat-label>
-                <input matInput [formControl]="turnStepsControl">
-            </mat-form-field>
-            <button mat-fab color="accent" (click)="addTurn(dirs.LEFT)">
-                <mat-icon>arrow_back</mat-icon>
-            </button>
-            <button mat-fab color="accent" (click)="addTurn(dirs.RIGHT)">
-                <mat-icon>arrow_forward</mat-icon>
-            </button>
-            <mat-checkbox [formControl]="turnScaleControl">degrees</mat-checkbox>
-        </mat-card-content>
-    </mat-card>
-
-    <mat-card>
-        <mat-card-header>Grab</mat-card-header>
-        <mat-card-content>
-            <button mat-raised-button color="accent" (click)="addGrab('Grab')">Grab</button>
-            <button mat-raised-button color="accent" (click)="addGrab('Release')">Release</button>
-        </mat-card-content>
-    </mat-card>
-
-    <mat-card>
-        <mat-card-header>Plan</mat-card-header>
-    <mat-card-content>
-        <div *ngIf="currPlan | async as plan">
+<mat-card>
+<mat-card-header *ngIf="solMessage | async as msg">{{msg}}</mat-card-header>
+<mat-card-content>
+    <mat-divider></mat-divider>
+    <h3 class="section-header">Move</h3>
+    <div class="section-body">
+        <mat-form-field>
+            <mat-label>Steps</mat-label>
+            <input matInput [formControl]="moveStepsControl">
+        </mat-form-field>
+        <button mat-fab color="accent" (click)="addMove(dirs.UP)">
+            <mat-icon>arrow_upward</mat-icon>
+        </button>
+        <button mat-fab color="accent" (click)="addMove(dirs.DOWN)">
+            <mat-icon>arrow_downward</mat-icon>
+        </button>
+    </div>
+    <mat-divider></mat-divider>
+    <h3 class="section-header">Turn</h3>
+    <div class="section-body">
+        <mat-form-field>
+            <mat-label>Steps</mat-label>
+            <input matInput [formControl]="turnStepsControl">
+        </mat-form-field>
+        <button mat-fab color="accent" (click)="addTurn(dirs.LEFT)">
+            <mat-icon>arrow_back</mat-icon>
+        </button>
+        <button mat-fab color="accent" (click)="addTurn(dirs.RIGHT)">
+            <mat-icon>arrow_forward</mat-icon>
+        </button>
+        <mat-chip-listbox [formControl]="turnScaleControl">
+            <mat-chip-option color="accent">Show degrees?</mat-chip-option>
+        </mat-chip-listbox>
+    </div>
+    <mat-divider></mat-divider>
+    <h3 class="section-header">Grab</h3>
+    <div class="section-body">
+        <button mat-raised-button color="accent" (click)="addGrab('Grab')">Grab</button>
+        <button mat-raised-button color="accent" (click)="addGrab('Release')">Release</button>
+    </div>
+    <mat-divider></mat-divider>
+    <h3 class="section-header">Plan</h3>
+    <div class="section-body">
+        <div *ngIf="currPlan | async as plan" id="planStepRoot">
             <app-plan-step *ngFor="let step of plan" [planStep]="step" [turnScale]="getTurnScale()"></app-plan-step>
         </div>
         <button mat-fab color="warn" (click)="popPlanStep()">
             <mat-icon>backspace</mat-icon>
         </button>
-    </mat-card-content>
-    </mat-card>
-
-    <mat-card>
-    <mat-card-content>
-        <div *ngIf="currPlan | async as plan">
-            <button mat-raised-button color="primary" (click)="sendCurrPlan()" [disabled]="plan.length == 0">
-                Send Plan to Robot on Mars
-            </button>
-            <button mat-raised-button color="primary" (click)="requestRescue()">Rescue</button>
-        </div>
-    </mat-card-content>
-    </mat-card>
+    </div>
+    <mat-divider></mat-divider>
+    <div class="section-body" *ngIf="currPlan | async as plan">
+        <button mat-raised-button color="primary" (click)="sendCurrPlan()" [disabled]="plan.length == 0">
+            Send Plan to Robot on Mars
+        </button>
+        <button mat-raised-button color="primary" (click)="requestRescue()">Rescue</button>
+    </div>
+</mat-card-content>
+</mat-card>
 </ng-container>
 
 <ng-container *ngSwitchCase="stateType.SENDING">
-    <mat-progress-bar mode="determinate" [value]="progressValue|async"></mat-progress-bar>
+    <h2>Sending plan...</h2>
+    <mat-progress-bar mode="determinate" [value]="progressValue|async" id="send-progress" color="accent"></mat-progress-bar>
 </ng-container>
 
 </ng-container>

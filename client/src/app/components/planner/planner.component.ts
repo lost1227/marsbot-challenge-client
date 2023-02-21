@@ -3,7 +3,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { DateTime, Duration, Interval } from 'luxon';
-import { BehaviorSubject, combineLatest, filter, finalize, interval, map, Observable, ReplaySubject, startWith, switchMap, take, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, finalize, interval, map, Observable, ReplaySubject, startWith, switchMap, take, tap } from 'rxjs';
 import { RescueResponse, RobotPlanResponse, SolResponse } from 'src/app/models/remote.model';
 import { Direction, GrabStep, MoveStep, RemoteRobotPlan, RemoteRobotPlanStep, RobotPlanStep, TurnStep } from 'src/app/models/robot-plan.model';
 import { ConfigService } from 'src/app/services/config.service';
@@ -58,7 +58,7 @@ export class PlannerComponent {
 
   protected moveStepsControl = new FormControl(1, Validators.min(1));
   protected turnStepsControl = new FormControl(1, Validators.min(1));
-  protected turnScaleControl = new FormControl(false);
+  protected turnScaleControl = new FormControl();
 
   protected solTime = new ReplaySubject<SolTiming>(1);
   protected solMessage: Observable<string>
@@ -98,6 +98,18 @@ export class PlannerComponent {
         time.getTimeRemaining()
       );
     })
+
+    this.turnScaleControl.valueChanges.pipe(
+      distinctUntilChanged(),
+      map(value => {
+      if(value) {
+        return 90;
+      } else {
+        return 1/90;
+      }
+    })).subscribe(scale => {
+      this.turnStepsControl.setValue(Number(this.turnStepsControl.value) * scale);
+    });
   }
 
   protected addMove(dirstr: string) {
@@ -114,6 +126,8 @@ export class PlannerComponent {
     if(this.moveStepsControl.invalid || !value)
       return;
 
+    value = value / this.getTurnScale();
+
     this.currPlan.next(this.currPlan.getValue().concat(new TurnStep(value, dir)));
   }
   protected addGrab(type: string) {
@@ -127,23 +141,22 @@ export class PlannerComponent {
     this.currPlan.next(currPlan.slice(0, -1));
   }
 
+  protected shouldShowDegrees() {
+    return !!this.turnScaleControl.value;
+  }
+
   protected getTurnScale() {
-    let value = this.turnScaleControl.value;
-    if(value) {
-      return 90;
-    } else {
-      return 1;
-    }
+    return this.turnScaleControl.value ? 90 : 1;
   }
 
   private uploadPlanResponse(response: RobotPlanResponse|RescueResponse) {
-    const steps = 20;
+    const steps = 30;
     const delayTimeSeconds = response.delay;
     const stepTime = (delayTimeSeconds * 1000) / steps;
 
     interval(stepTime).pipe(
-      take(20),
-      map(value => value * (100 / (steps - 1))),
+      take(steps),
+      map(value => value * (100 / (steps - 2))),
       tap(console.log),
       finalize(() => this.state.next(PageState.PLANNING))
     ).subscribe(progress => this.progressValue.next(progress));
@@ -153,7 +166,7 @@ export class PlannerComponent {
     this.progressValue.next(0);
     this.state.next(PageState.SENDING);
 
-    const turnScale = this.getTurnScale();
+    const turnScale = 1;
     const plan: RemoteRobotPlan = this.currPlan.getValue().map(step => step.toRemotePlanStep(turnScale));
 
     this.currPlan.next([]);

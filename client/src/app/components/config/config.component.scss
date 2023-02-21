@@ -2,5 +2,27 @@
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
-    align-items: baseline;
+    align-items: begin;
+    gap: 15px;
+}
+
+.configrow > button {
+    min-width: 140px;
+    padding: 28px 5px;
+}
+
+.importantInfo {
+    font-weight: 500;
+}
+
+#actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 15px;
+}
+
+#actions > * {
+    min-width: 140px;
+    padding: 24px 5px;
 }

@@ -1,13 +1,15 @@
-<ng-container [ngSwitch]="planStep.type">
-<ng-container *ngSwitchCase="stepTypes.MOVE">
-    <mat-icon>{{getDisplayDirection()}}</mat-icon> {{getSteps()}}
-</ng-container>
+<div class="itemContainer">
+    <ng-container [ngSwitch]="planStep.type">
+    <ng-container *ngSwitchCase="stepTypes.MOVE">
+        <mat-icon>{{getDisplayDirection()}}</mat-icon> {{getSteps()}}
+    </ng-container>
 
-<ng-container *ngSwitchCase="stepTypes.TURN">
-    <mat-icon>{{getDisplayDirection()}}</mat-icon> {{getScaledSteps()}}
-</ng-container>
+    <ng-container *ngSwitchCase="stepTypes.TURN">
+        <mat-icon>{{getDisplayDirection()}}</mat-icon> {{getScaledSteps()}} <span *ngIf="turnScale == 90">&deg;</span>
+    </ng-container>
 
-<ng-container *ngSwitchCase="stepTypes.GRAB">
-    {{getGrabAction()}}
-</ng-container>
-</ng-container>
+    <ng-container *ngSwitchCase="stepTypes.GRAB">
+        {{getGrabAction()}}
+    </ng-container>
+    </ng-container>
+</div>

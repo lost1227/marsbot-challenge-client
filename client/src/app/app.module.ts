@@ -2,12 +2,14 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { HttpClientModule } from '@angular/common/http';
+import { httpInterceptorProviders } from './http-interceptors';
 
 import { AppComponent } from './app.component';
 import { ConfigComponent } from './components/config/config.component';
 import { PlannerComponent } from './components/planner/planner.component';
 import { PlanStepComponent } from './components/planner/plan-step/plan-step.component';
 import { RescueConfirmComponent } from './components/planner/rescue-confirm/rescue-confirm.component';
+import { ErrorComponent } from './components/error/error.component';
 import { SpinnerComponent } from './components/reuse/spinner/spinner.component';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -25,8 +27,9 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatLuxonDateModule } from '@angular/material-luxon-adapter';
 import { MatDialogModule } from '@angular/material/dialog';
-import { ErrorComponent } from './components/error/error.component';
-import { httpInterceptorProviders } from './http-interceptors';
+import { MatChipsModule } from '@angular/material/chips';
+
+import { MatDividerModule } from '@angular/material/divider';
 
 @NgModule({
   declarations: [
@@ -54,7 +57,9 @@ import { httpInterceptorProviders } from './http-interceptors';
     MatCheckboxModule,
     MatProgressBarModule,
     MatLuxonDateModule,
-    MatDialogModule
+    MatDialogModule,
+    MatDividerModule,
+    MatChipsModule
   ],
   providers: [
     httpInterceptorProviders
