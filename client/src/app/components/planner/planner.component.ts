@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { DateTime, Duration, Interval } from 'luxon';
 import { BehaviorSubject, combineLatest, filter, finalize, interval, map, Observable, ReplaySubject, startWith, switchMap, take, tap } from 'rxjs';
@@ -7,6 +8,7 @@ import { RescueResponse, RobotPlanResponse, SolResponse } from 'src/app/models/r
 import { Direction, GrabStep, MoveStep, RemoteRobotPlan, RemoteRobotPlanStep, RobotPlanStep, TurnStep } from 'src/app/models/robot-plan.model';
 import { ConfigService } from 'src/app/services/config.service';
 import { RemoteService } from 'src/app/services/remote.service';
+import { RescueConfirmComponent } from './rescue-confirm/rescue-confirm.component';
 
 enum PageState {
   PLANNING,
@@ -67,6 +69,7 @@ export class PlannerComponent {
 
   constructor(
     private router: Router,
+    private dialog: MatDialog,
     private configService: ConfigService,
     private remoteService: RemoteService
   ) {
@@ -165,17 +168,27 @@ export class PlannerComponent {
   }
 
   protected requestRescue() {
-    this.progressValue.next(0);
-    this.state.next(PageState.SENDING);
+    const dialogRef = this.dialog.open(RescueConfirmComponent, {
+      width: '320px'
+    });
 
-    this.currPlan.next([]);
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if(!confirmed)
+        return;
 
-    const config = this.configService.getConfig();
-    if(!config) {
-      this.router.navigate(['/config']);
-      return;
-    }
 
-    this.remoteService.sendRescue(config.robotId).subscribe(this.uploadPlanResponse.bind(this));
+      this.progressValue.next(0);
+      this.state.next(PageState.SENDING);
+
+      this.currPlan.next([]);
+
+      const config = this.configService.getConfig();
+      if(!config) {
+        this.router.navigate(['/config']);
+        return;
+      }
+
+      this.remoteService.sendRescue(config.robotId).subscribe(this.uploadPlanResponse.bind(this));
+    })
   }
 }

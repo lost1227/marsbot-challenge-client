@@ -7,6 +7,7 @@ import { AppComponent } from './app.component';
 import { ConfigComponent } from './components/config/config.component';
 import { PlannerComponent } from './components/planner/planner.component';
 import { PlanStepComponent } from './components/planner/plan-step/plan-step.component';
+import { RescueConfirmComponent } from './components/planner/rescue-confirm/rescue-confirm.component';
 import { SpinnerComponent } from './components/reuse/spinner/spinner.component';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -23,6 +24,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatLuxonDateModule } from '@angular/material-luxon-adapter';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [
@@ -30,7 +32,8 @@ import { MatLuxonDateModule } from '@angular/material-luxon-adapter';
     ConfigComponent,
     SpinnerComponent,
     PlannerComponent,
-    PlanStepComponent
+    PlanStepComponent,
+    RescueConfirmComponent
   ],
   imports: [
     BrowserModule,
@@ -47,7 +50,8 @@ import { MatLuxonDateModule } from '@angular/material-luxon-adapter';
     MatIconModule,
     MatCheckboxModule,
     MatProgressBarModule,
-    MatLuxonDateModule
+    MatLuxonDateModule,
+    MatDialogModule
   ],
   providers: [],
   bootstrap: [AppComponent]
