@@ -1,12 +1,45 @@
 import { Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { BehaviorSubject, ReplaySubject } from 'rxjs';
+import { Router } from '@angular/router';
+import { DateTime, Duration, Interval } from 'luxon';
+import { BehaviorSubject, combineLatest, filter, finalize, interval, map, Observable, ReplaySubject, startWith, switchMap, take, tap } from 'rxjs';
+import { RescueResponse, RobotPlanResponse, SolResponse } from 'src/app/models/remote.model';
 import { Direction, GrabStep, MoveStep, RemoteRobotPlan, RemoteRobotPlanStep, RobotPlanStep, TurnStep } from 'src/app/models/robot-plan.model';
+import { ConfigService } from 'src/app/services/config.service';
+import { RemoteService } from 'src/app/services/remote.service';
 
 enum PageState {
   PLANNING,
   SENDING
 };
+
+class SolTiming {
+  public solBase: number;
+  public solTotal: number;
+  public minsPerSol: number;
+  public solRtBase: DateTime;
+
+  constructor(from: SolResponse) {
+    this.solBase = from.sol;
+    this.solTotal = from.total_sols;
+    this.minsPerSol = from.mins_per_sol;
+    this.solRtBase = DateTime.now();
+  }
+
+  public getSolNow(): number {
+    const time_planning = DateTime.now().diff(this.solRtBase, 'minutes');
+    return this.solBase + (time_planning.minutes / this.minsPerSol);
+  }
+
+  public getTimeRemaining(): number {
+    let remaining_mins = (this.solTotal - this.solBase) * this.minsPerSol;
+    // never query more than once per minute
+    if(remaining_mins < 1) {
+      remaining_mins = 1;
+    }
+    return remaining_mins * 60000;
+  }
+}
 
 @Component({
   selector: 'app-planner',
@@ -24,6 +57,45 @@ export class PlannerComponent {
   protected moveStepsControl = new FormControl(1, Validators.min(1));
   protected turnStepsControl = new FormControl(1, Validators.min(1));
   protected turnScaleControl = new FormControl(false);
+
+  protected solTime = new ReplaySubject<SolTiming>(1);
+  protected solMessage: Observable<string>
+
+  private solRefreshTimeout: number = -1;
+
+  protected progressValue = new ReplaySubject<number>(1);
+
+  constructor(
+    private router: Router,
+    private configService: ConfigService,
+    private remoteService: RemoteService
+  ) {
+    this.state.pipe(
+      startWith(PageState.PLANNING),
+      filter(it => it == PageState.PLANNING),
+      switchMap(_state => remoteService.getSol())
+    ).subscribe(sol => this.solTime.next(new SolTiming(sol)));
+
+    this.solMessage = combineLatest({
+      _interval: interval(1000).pipe(startWith(0)),
+      timing: this.solTime
+    }).pipe(
+      map(({_interval, timing}) =>
+        `Sol ${timing.getSolNow().toFixed(1)} of ${timing.solTotal.toFixed(0)}`
+      )
+    );
+
+    this.solTime.subscribe(time => {
+      clearTimeout(this.solRefreshTimeout);
+      this.solRefreshTimeout = window.setTimeout(
+        () => {
+          console.log("Timeout: Query for game over");
+          remoteService.getSol().subscribe(sol => this.solTime.next(new SolTiming(sol)));
+        },
+        time.getTimeRemaining()
+      );
+    })
+  }
 
   protected addMove(dirstr: string) {
     let value = Number(this.moveStepsControl.value);
@@ -61,6 +133,49 @@ export class PlannerComponent {
     }
   }
 
-  protected sendPlan(){}
-  protected requestRescue(){}
+  private uploadPlanResponse(response: RobotPlanResponse|RescueResponse) {
+    const steps = 20;
+    const delayTimeSeconds = response.delay;
+    const stepTime = (delayTimeSeconds * 1000) / steps;
+
+    interval(stepTime).pipe(
+      take(20),
+      map(value => value * (100 / (steps - 1))),
+      tap(console.log),
+      finalize(() => this.state.next(PageState.PLANNING))
+    ).subscribe(progress => this.progressValue.next(progress));
+  }
+
+  protected sendCurrPlan(){
+    this.progressValue.next(0);
+    this.state.next(PageState.SENDING);
+
+    const turnScale = this.getTurnScale();
+    const plan: RemoteRobotPlan = this.currPlan.getValue().map(step => step.toRemotePlanStep(turnScale));
+
+    this.currPlan.next([]);
+
+    const config = this.configService.getConfig();
+    if(!config) {
+      this.router.navigate(['/config']);
+      return;
+    }
+
+    this.remoteService.sendPlan(config.robotId, plan).subscribe(this.uploadPlanResponse.bind(this));
+  }
+
+  protected requestRescue() {
+    this.progressValue.next(0);
+    this.state.next(PageState.SENDING);
+
+    this.currPlan.next([]);
+
+    const config = this.configService.getConfig();
+    if(!config) {
+      this.router.navigate(['/config']);
+      return;
+    }
+
+    this.remoteService.sendRescue(config.robotId).subscribe(this.uploadPlanResponse.bind(this));
+  }
 }

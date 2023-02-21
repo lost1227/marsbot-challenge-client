@@ -6,6 +6,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { AppComponent } from './app.component';
 import { ConfigComponent } from './components/config/config.component';
 import { PlannerComponent } from './components/planner/planner.component';
+import { PlanStepComponent } from './components/planner/plan-step/plan-step.component';
 import { SpinnerComponent } from './components/reuse/spinner/spinner.component';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -20,7 +21,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { PlanStepComponent } from './components/planner/plan-step/plan-step.component';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatLuxonDateModule } from '@angular/material-luxon-adapter';
 
 @NgModule({
   declarations: [
@@ -43,7 +45,9 @@ import { PlanStepComponent } from './components/planner/plan-step/plan-step.comp
     MatButtonModule,
     MatProgressSpinnerModule,
     MatIconModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatProgressBarModule,
+    MatLuxonDateModule
   ],
   providers: [],
   bootstrap: [AppComponent]

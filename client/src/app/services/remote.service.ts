@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { RescueResponse, RobotAssignmentResponse, RobotId, RobotPlanResponse, SolResponse } from '../models/remote.model';
 import { RemoteRobotPlan } from '../models/robot-plan.model';
@@ -18,7 +18,14 @@ export class RemoteService {
   }
 
   public getSol(): Observable<SolResponse> {
-    return this.httpClient.get<SolResponse>(environment.serverAddress + "sol");
+    return this.httpClient.get<SolResponse>(environment.serverAddress + "sol").pipe(
+      map(response => ({
+        status: response.status,
+        sol: Number(response.sol),
+        total_sols: Number(response.total_sols),
+        mins_per_sol: Number(response.mins_per_sol)
+      }))
+    );
   }
 
   public sendPlan(robot: RobotId, plan: RemoteRobotPlan): Observable<RobotPlanResponse> {

@@ -14,9 +14,9 @@ export interface RobotAssignmentResponse extends Response {
 }
 
 export interface SolResponse extends Response {
-    sol: string,
-    total_sols: string,
-    mins_per_sol: string
+    sol: number,
+    total_sols: number,
+    mins_per_sol: number
 }
 
 export interface RobotPlanResponse extends Response {
