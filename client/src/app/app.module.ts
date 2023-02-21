@@ -25,6 +25,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatLuxonDateModule } from '@angular/material-luxon-adapter';
 import { MatDialogModule } from '@angular/material/dialog';
+import { ErrorComponent } from './components/error/error.component';
+import { httpInterceptorProviders } from './http-interceptors';
 
 @NgModule({
   declarations: [
@@ -33,7 +35,8 @@ import { MatDialogModule } from '@angular/material/dialog';
     SpinnerComponent,
     PlannerComponent,
     PlanStepComponent,
-    RescueConfirmComponent
+    RescueConfirmComponent,
+    ErrorComponent
   ],
   imports: [
     BrowserModule,
@@ -53,7 +56,9 @@ import { MatDialogModule } from '@angular/material/dialog';
     MatLuxonDateModule,
     MatDialogModule
   ],
-  providers: [],
+  providers: [
+    httpInterceptorProviders
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
