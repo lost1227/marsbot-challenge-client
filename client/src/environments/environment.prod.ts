@@ -1,5 +1,6 @@
 export const environment = {
     production: true,
     serverAddress: "/",
-    configStorage: localStorage
+    configStorage: localStorage,
+    gameStartPollInterval: 1000
 }

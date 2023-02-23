@@ -3,45 +3,20 @@ import { FormControl, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { DateTime, Duration, Interval } from 'luxon';
-import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, finalize, interval, map, Observable, ReplaySubject, startWith, switchMap, take, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, finalize, interval, map, Observable, ReplaySubject, startWith, Subject, switchMap, take, tap, timer } from 'rxjs';
 import { RescueResponse, RobotPlanResponse, SolResponse } from 'src/app/models/remote.model';
 import { Direction, GrabStep, MoveStep, RemoteRobotPlan, RemoteRobotPlanStep, RobotPlanStep, TurnStep } from 'src/app/models/robot-plan.model';
 import { ConfigService } from 'src/app/services/config.service';
+import { GameState, GameStateService, GameStateType, RunningState } from 'src/app/services/game-state.service';
 import { RemoteService } from 'src/app/services/remote.service';
 import { RescueConfirmComponent } from './rescue-confirm/rescue-confirm.component';
 
 enum PageState {
+  GAME_NOT_RUNNING,
   PLANNING,
   SENDING
 };
 
-class SolTiming {
-  public solBase: number;
-  public solTotal: number;
-  public minsPerSol: number;
-  public solRtBase: DateTime;
-
-  constructor(from: SolResponse) {
-    this.solBase = from.sol;
-    this.solTotal = from.total_sols;
-    this.minsPerSol = from.mins_per_sol;
-    this.solRtBase = DateTime.now();
-  }
-
-  public getSolNow(): number {
-    const time_planning = DateTime.now().diff(this.solRtBase, 'minutes');
-    return this.solBase + (time_planning.minutes / this.minsPerSol);
-  }
-
-  public getTimeRemaining(): number {
-    let remaining_mins = (this.solTotal - this.solBase) * this.minsPerSol;
-    // never query more than once per minute
-    if(remaining_mins < 1) {
-      remaining_mins = 1;
-    }
-    return remaining_mins * 60000;
-  }
-}
 
 @Component({
   selector: 'app-planner',
@@ -60,10 +35,8 @@ export class PlannerComponent {
   protected turnStepsControl = new FormControl(1, Validators.min(1));
   protected turnScaleControl = new FormControl();
 
-  protected solTime = new ReplaySubject<SolTiming>(1);
+  protected gameState: Observable<GameState>
   protected solMessage: Observable<string>
-
-  private solRefreshTimeout: number = -1;
 
   protected progressValue = new ReplaySubject<number>(1);
 
@@ -71,33 +44,32 @@ export class PlannerComponent {
     private router: Router,
     private dialog: MatDialog,
     private configService: ConfigService,
+    private gameStateService: GameStateService,
     private remoteService: RemoteService
   ) {
-    this.state.pipe(
-      startWith(PageState.PLANNING),
-      filter(it => it == PageState.PLANNING),
-      switchMap(_state => remoteService.getSol())
-    ).subscribe(sol => this.solTime.next(new SolTiming(sol)));
+    this.gameState = gameStateService.getGameState();
+    this.gameState.pipe(
+      map(gameState => {
+        const pageState = this.state.getValue();
+        if(gameState.type == GameStateType.NOT_RUNNING) {
+          return PageState.GAME_NOT_RUNNING;
+        } else if(pageState == PageState.GAME_NOT_RUNNING) {
+          return PageState.PLANNING;
+        } else {
+          return pageState;
+        }
+      })
+    ).subscribe(this.state);
 
     this.solMessage = combineLatest({
-      _interval: interval(1000).pipe(startWith(0)),
-      timing: this.solTime
+      _interval: timer(0, 1000),
+      state: this.gameState.pipe(
+        filter(state => state.type == GameStateType.RUNNING)) as Observable<RunningState>
     }).pipe(
-      map(({_interval, timing}) =>
-        `Sol ${timing.getSolNow().toFixed(1)} of ${timing.solTotal.toFixed(0)}`
+      map(({_interval, state}) =>
+        `Sol ${state.getCurrSol().toFixed(1)} of ${state.solTotal.toFixed(0)}`
       )
     );
-
-    this.solTime.subscribe(time => {
-      clearTimeout(this.solRefreshTimeout);
-      this.solRefreshTimeout = window.setTimeout(
-        () => {
-          console.log("Timeout: Query for game over");
-          remoteService.getSol().subscribe(sol => this.solTime.next(new SolTiming(sol)));
-        },
-        time.getTimeRemaining()
-      );
-    })
 
     this.turnScaleControl.valueChanges.pipe(
       distinctUntilChanged(),
@@ -188,7 +160,6 @@ export class PlannerComponent {
     dialogRef.afterClosed().subscribe(confirmed => {
       if(!confirmed)
         return;
-
 
       this.progressValue.next(0);
       this.state.next(PageState.SENDING);

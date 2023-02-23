@@ -9,6 +9,11 @@ export interface Response {
     status: Status
 }
 
+export interface ErrorResponse {
+    status: Status,
+    message: string
+}
+
 export interface RobotAssignmentResponse extends Response {
     robot_number: RobotId
 }
