@@ -13,11 +13,11 @@ enum PageState {
 };
 
 @Component({
-  selector: 'app-config',
-  templateUrl: './config.component.html',
-  styleUrls: ['./config.component.scss']
+  selector: 'app-welcome',
+  templateUrl: './welcome.component.html',
+  styleUrls: ['./welcome.component.scss']
 })
-export class ConfigComponent {
+export class WelcomeComponent {
   protected currConfig = new ReplaySubject<Configuration>(1);
   protected state: BehaviorSubject<PageState>;
   protected stateType = PageState;

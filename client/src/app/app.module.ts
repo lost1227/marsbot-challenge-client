@@ -5,7 +5,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { httpInterceptorProviders } from './http-interceptors';
 
 import { AppComponent } from './app.component';
-import { ConfigComponent } from './components/config/config.component';
+import { WelcomeComponent } from './components/welcome/welcome.component';
 import { PlannerComponent } from './components/planner/planner.component';
 import { PlanStepComponent } from './components/planner/plan-step/plan-step.component';
 import { RescueConfirmComponent } from './components/planner/rescue-confirm/rescue-confirm.component';
@@ -34,7 +34,7 @@ import { MatDividerModule } from '@angular/material/divider';
 @NgModule({
   declarations: [
     AppComponent,
-    ConfigComponent,
+    WelcomeComponent,
     SpinnerComponent,
     PlannerComponent,
     PlanStepComponent,
