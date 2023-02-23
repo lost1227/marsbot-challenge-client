@@ -26,7 +26,7 @@ enum PageState {
 export class PlannerComponent {
   protected readonly dirs = Direction;
 
-  protected state = new BehaviorSubject<PageState>(PageState.PLANNING);
+  protected state = new BehaviorSubject<PageState>(PageState.GAME_NOT_RUNNING);
   protected stateType = PageState;
 
   protected currPlan = new BehaviorSubject<Array<RobotPlanStep>>([]);

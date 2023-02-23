@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { Router } from '@angular/router';
+import { ErrorService } from 'src/app/services/error.service';
 
 @Component({
   selector: 'app-error',
@@ -7,13 +8,17 @@ import { Router } from '@angular/router';
   styleUrls: ['./error.component.scss']
 })
 export class ErrorComponent {
-  private error: Error|null;
+  private message: string | null
 
   constructor(router: Router) {
-    this.error = router.getCurrentNavigation()?.extras.state?.['error'];
+    this.message = router.getCurrentNavigation()?.extras.state?.['message'];
   }
 
   protected getErrorMessage(): string {
-    return this.error?.message ?? "An unknown error occurred.";
+    if(this.message) {
+      return this.message;
+    } else {
+      return ErrorService.unknownErrorMsg;
+    }
   }
 }
