@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -42,12 +42,12 @@ export class RemoteService {
   }
 
   public sendPlan(robot: RobotId, plan: RemoteRobotPlan): Observable<RobotPlanResponse> {
-    let body = {
-      robot,
-      plan
-    };
-    return this.httpClient.post<RobotPlanResponse>(environment.serverAddress + "plan", body)
-      .pipe(this.errorService.interceptErrors());
+    const body = new URLSearchParams();
+    body.set('robot', robot);
+    body.set('plan', JSON.stringify(plan));
+    return this.httpClient.post<RobotPlanResponse>(environment.serverAddress + "plan", body.toString(), {
+      headers: new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded')
+    }).pipe(this.errorService.interceptErrors());
   }
 
   public sendRescue(robot: RobotId): Observable<RescueResponse> {
