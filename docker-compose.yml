@@ -12,16 +12,18 @@ services:
     volumes:
       - './:/var/www/html'
     networks:
-      - attendance
+      - marsbots
   nginx:
     image: nginx:stable-alpine
     restart: unless-stopped
     ports:
       - "8080:80"
     volumes:
-      - ./dev-proxy/data/data:/var/www/html/data
       - ./dev-proxy/data/conf.d:/etc/nginx/conf.d
+      - ./dev-proxy/data/templates:/etc/nginx/templates
+    environment:
+      - SERVER_IP=JORDANS-DESKTOP.local
     networks:
-      - attendance
+      - marsbots
 networks:
-  attendance:
+  marsbots:
