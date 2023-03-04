@@ -1,9 +1,17 @@
 <mat-toolbar color="primary">
   <div id="toolbar-container">
-    <a routerLink="/welcome" id="app-title">Marsbot Challenge</a>
+    <div id="app-title">Marsbot Challenge</div>
+    <div id="user-name" *ngIf="userName|async as name">{{name}}</div>
   </div>
 </mat-toolbar>
 
 <div id="mainPage">
-  <router-outlet></router-outlet>
+  <ng-container [ngSwitch]="state|async">
+    <app-welcome *ngSwitchCase="stateType.NEW_USER"></app-welcome>
+    <app-game-start *ngSwitchCase="stateType.WAIT_FOR_GAME"></app-game-start>
+    <app-planner *ngSwitchCase="stateType.PLANNING"></app-planner>
+    <app-game-end *ngSwitchCase="stateType.END_OF_GAME"></app-game-end>
+    <app-error *ngSwitchCase="stateType.ERROR"></app-error>
+    <div *ngSwitchDefault>Unknown state</div>
+  </ng-container>
 </div>

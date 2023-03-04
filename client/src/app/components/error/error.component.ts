@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component } from '@angular/core';
+import { AppState, AppStateService } from 'src/app/services/app-state.service';
 import { ErrorService } from 'src/app/services/error.service';
 
 @Component({
@@ -10,8 +10,11 @@ import { ErrorService } from 'src/app/services/error.service';
 export class ErrorComponent {
   private message: string | null
 
-  constructor(router: Router) {
-    this.message = router.getCurrentNavigation()?.extras.state?.['message'];
+  constructor(
+    private errorService: ErrorService,
+    private appStateService: AppStateService
+  ) {
+    this.message = errorService.getLastError()?.message ?? null;
   }
 
   protected getErrorMessage(): string {
@@ -20,5 +23,9 @@ export class ErrorComponent {
     } else {
       return ErrorService.unknownErrorMsg;
     }
+  }
+
+  protected restart() {
+    this.appStateService.nextState(AppState.NEW_USER);
   }
 }

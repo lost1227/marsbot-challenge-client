@@ -2,7 +2,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { ErrorResponse, RescueResponse, RobotAssignmentResponse, RobotId, RobotPlanResponse, SolResponse } from '../models/remote.model';
+import { ErrorResponse, GameStateResponse, RescueResponse, RobotAssignmentResponse, RobotId, RobotPlanResponse, SolResponse } from '../models/remote.model';
 import { RemoteRobotPlan } from '../models/robot-plan.model';
 import { ErrorService } from './error.service';
 
@@ -16,29 +16,22 @@ export class RemoteService {
     private errorService: ErrorService
   ) {}
 
-  public getRobotAssignment(userName: string): Observable<RobotAssignmentResponse> {
-    let params = new HttpParams().set('name', userName);
+  public getRobotAssignment(userName: string, clientId: string): Observable<RobotAssignmentResponse> {
+    let params = new HttpParams().set('name', userName).set('clientId', clientId);
     return this.httpClient
       .get<RobotAssignmentResponse>(environment.serverAddress + "robot_assignment", {params})
       .pipe(this.errorService.interceptErrors());
   }
 
-  public getSol(): Observable<SolResponse|ErrorResponse> {
-    // Note: getSol() does not automatically intercept errors as some errors are used by the
-    // GameStateService to determine whether or not the game is currently running
+  public getGameState(): Observable<GameStateResponse> {
+    return this.httpClient
+      .get<GameStateResponse>(environment.serverAddress + "game_state")
+      .pipe(this.errorService.interceptErrors());
+  }
+
+  public getSol(): Observable<SolResponse> {
     return this.httpClient.get<SolResponse>(environment.serverAddress + "sol").pipe(
-      map(response => {
-        if(response.status == "ok")
-          return {
-            status: response.status,
-            sol: Number(response.sol),
-            total_sols: Number(response.total_sols),
-            mins_per_sol: Number(response.mins_per_sol)
-          }
-        else
-          return response;
-      })
-    );
+      this.errorService.interceptErrors(false));
   }
 
   public sendPlan(robot: RobotId, plan: RemoteRobotPlan): Observable<RobotPlanResponse> {
@@ -51,10 +44,10 @@ export class RemoteService {
   }
 
   public sendRescue(robot: RobotId): Observable<RescueResponse> {
-    let body = {
-      robot
-    };
-    return this.httpClient.post<RescueResponse>(environment.serverAddress + "plan", body)
-      .pipe(this.errorService.interceptErrors());
+    const body = new URLSearchParams();
+    body.set('robot', robot);
+    return this.httpClient.post<RescueResponse>(environment.serverAddress + "plan", body.toString(), {
+      headers: new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded')
+    }).pipe(this.errorService.interceptErrors());
   }
 }

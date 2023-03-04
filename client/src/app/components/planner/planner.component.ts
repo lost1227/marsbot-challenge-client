@@ -1,18 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { Router } from '@angular/router';
-import { DateTime, Duration, Interval } from 'luxon';
-import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, finalize, interval, map, Observable, ReplaySubject, startWith, Subject, switchMap, take, tap, timer } from 'rxjs';
-import { RescueResponse, RobotPlanResponse, SolResponse } from 'src/app/models/remote.model';
-import { Direction, GrabStep, MoveStep, RemoteRobotPlan, RemoteRobotPlanStep, RobotPlanStep, TurnStep } from 'src/app/models/robot-plan.model';
-import { ConfigService } from 'src/app/services/config.service';
+import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, finalize, interval, map, Observable, ReplaySubject, Subscription, take, tap, timer } from 'rxjs';
+import { RescueResponse, RobotPlanResponse } from 'src/app/models/remote.model';
+import { Direction, GrabStep, MoveStep, RemoteRobotPlan, RobotPlanStep, TurnStep } from 'src/app/models/robot-plan.model';
+import { UserService } from 'src/app/services/user.service';
 import { GameState, GameStateService, GameStateType, RunningState } from 'src/app/services/game-state.service';
 import { RemoteService } from 'src/app/services/remote.service';
 import { RescueConfirmComponent } from './rescue-confirm/rescue-confirm.component';
+import { AppState, AppStateService } from 'src/app/services/app-state.service';
 
 enum PageState {
-  GAME_NOT_RUNNING,
   PLANNING,
   SENDING
 };
@@ -23,10 +21,10 @@ enum PageState {
   templateUrl: './planner.component.html',
   styleUrls: ['./planner.component.scss']
 })
-export class PlannerComponent {
+export class PlannerComponent implements OnInit, OnDestroy {
   protected readonly dirs = Direction;
 
-  protected state = new BehaviorSubject<PageState>(PageState.GAME_NOT_RUNNING);
+  protected state = new BehaviorSubject<PageState>(PageState.PLANNING);
   protected stateType = PageState;
 
   protected currPlan = new BehaviorSubject<Array<RobotPlanStep>>([]);
@@ -40,26 +38,15 @@ export class PlannerComponent {
 
   protected progressValue = new ReplaySubject<number>(1);
 
+  protected endOfGameSubscription!: Subscription
+
   constructor(
-    private router: Router,
+    private appStateService: AppStateService,
     private dialog: MatDialog,
-    private configService: ConfigService,
     private gameStateService: GameStateService,
     private remoteService: RemoteService
   ) {
     this.gameState = gameStateService.getGameState();
-    this.gameState.pipe(
-      map(gameState => {
-        const pageState = this.state.getValue();
-        if(gameState.type == GameStateType.NOT_RUNNING) {
-          return PageState.GAME_NOT_RUNNING;
-        } else if(pageState == PageState.GAME_NOT_RUNNING) {
-          return PageState.PLANNING;
-        } else {
-          return pageState;
-        }
-      })
-    ).subscribe(this.state);
 
     this.solMessage = combineLatest({
       _interval: timer(0, 1000),
@@ -82,6 +69,18 @@ export class PlannerComponent {
     })).subscribe(scale => {
       this.turnStepsControl.setValue(Number(this.turnStepsControl.value) * scale);
     });
+  }
+
+  ngOnInit() {
+    this.endOfGameSubscription = this.gameState.subscribe(state => {
+      if(state.type == GameStateType.NOT_RUNNING) {
+        this.appStateService.nextState(AppState.END_OF_GAME);
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.endOfGameSubscription.unsubscribe();
   }
 
   protected addMove(dirstr: string) {
@@ -122,7 +121,7 @@ export class PlannerComponent {
   }
 
   private uploadPlanResponse(response: RobotPlanResponse|RescueResponse) {
-    const steps = 30;
+    const steps = 15;
     const delayTimeSeconds = response.delay;
     const stepTime = (delayTimeSeconds * 1000) / steps;
 
@@ -143,13 +142,12 @@ export class PlannerComponent {
 
     this.currPlan.next([]);
 
-    const config = this.configService.getConfig();
-    if(!config) {
-      this.router.navigate(['/config']);
+    const user = this.gameStateService.getUserRobot();
+    if(!user) {
       return;
     }
 
-    this.remoteService.sendPlan(config.robotId, plan).subscribe(this.uploadPlanResponse.bind(this));
+    this.remoteService.sendPlan(user.robotId, plan).subscribe(this.uploadPlanResponse.bind(this));
   }
 
   protected requestRescue() {
@@ -166,13 +164,12 @@ export class PlannerComponent {
 
       this.currPlan.next([]);
 
-      const config = this.configService.getConfig();
-      if(!config) {
-        this.router.navigate(['/config']);
+      const user = this.gameStateService.getUserRobot();
+      if(!user) {
         return;
       }
 
-      this.remoteService.sendRescue(config.robotId).subscribe(this.uploadPlanResponse.bind(this));
+      this.remoteService.sendRescue(user.robotId).subscribe(this.uploadPlanResponse.bind(this));
     })
   }
 }

@@ -5,7 +5,7 @@
 		"../../docker-compose.yml"
 	],
 	"service": "angular.test",
-	"workspaceFolder": "/var/www/html",
+	"workspaceFolder": "/var/www/html/client",
 
 	// Forward the port for running tests
 	"forwardPorts": [ 9876 ],

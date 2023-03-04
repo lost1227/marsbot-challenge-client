@@ -12,7 +12,6 @@ import { RescueConfirmComponent } from './components/planner/rescue-confirm/resc
 import { ErrorComponent } from './components/error/error.component';
 import { SpinnerComponent } from './components/reuse/spinner/spinner.component';
 
-import { AppRoutingModule } from './app-routing.module';
 import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -30,6 +29,8 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatChipsModule } from '@angular/material/chips';
 
 import { MatDividerModule } from '@angular/material/divider';
+import { GameStartComponent } from './components/game-start/game-start.component';
+import { GameEndComponent } from './components/game-end/game-end.component';
 
 @NgModule({
   declarations: [
@@ -39,13 +40,14 @@ import { MatDividerModule } from '@angular/material/divider';
     PlannerComponent,
     PlanStepComponent,
     RescueConfirmComponent,
-    ErrorComponent
+    ErrorComponent,
+    GameStartComponent,
+    GameEndComponent
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
     ReactiveFormsModule,
-    AppRoutingModule,
     BrowserAnimationsModule,
     MatToolbarModule,
     MatCardModule,

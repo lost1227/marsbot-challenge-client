@@ -10,15 +10,14 @@ $pageWidth: 740px;
     width: 100%;
     max-width: $pageWidth;
     margin: auto;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 #app-title {
-    color: inherit;
-    text-decoration: inherit;
     font-weight: 400;
 }
 
-#app-title:hover {
-    text-decoration: underline;
-}
 

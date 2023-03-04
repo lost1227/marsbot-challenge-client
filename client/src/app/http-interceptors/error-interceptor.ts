@@ -1,7 +1,6 @@
-import { HttpEvent, HttpEventType, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
+import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
-import { catchError, map, Observable, of, retry } from 'rxjs';
+import { Observable } from 'rxjs';
 import { ErrorService } from '../services/error.service';
 
 @Injectable()

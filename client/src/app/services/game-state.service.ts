@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { DateTime } from 'luxon';
-import { filter, map, min, Observable, ReplaySubject, switchMap, take, timer } from 'rxjs';
+import { BehaviorSubject, catchError, filter, map, mergeMap, min, Observable, of, ReplaySubject, switchMap, take, timer } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { ErrorResponse, SolResponse, Status } from '../models/remote.model';
+import { RobotId, SolResponse } from '../models/remote.model';
+import { User, UserWithRobot } from '../models/user.model';
 import { ErrorService } from './error.service';
 import { RemoteService } from './remote.service';
 
@@ -12,11 +13,15 @@ export enum GameStateType {
 };
 
 export interface GameState {
-  type: GameStateType
+  type: GameStateType,
+  gameId: string
 }
 
 export class NotRunningState implements GameState {
   public readonly type = GameStateType.NOT_RUNNING;
+  constructor(
+    public readonly gameId: string
+  ) {}
 }
 
 export class RunningState implements GameState {
@@ -27,7 +32,11 @@ export class RunningState implements GameState {
   public minsPerSol: number;
   public solRtBase: DateTime;
 
-  constructor(from: SolResponse, when: DateTime) {
+  constructor(
+    public readonly gameId: string,
+    from: SolResponse,
+    when: DateTime
+  ) {
     this.solBase = from.sol;
     this.solTotal = from.total_sols;
     this.minsPerSol = from.mins_per_sol;
@@ -56,50 +65,60 @@ export class RunningState implements GameState {
 })
 export class GameStateService {
   private gameState = new ReplaySubject<GameState>(1);
+  private robot = new BehaviorSubject<UserWithRobot|null>(null);
 
   constructor(
-    private remoteService: RemoteService,
-    private errorService: ErrorService
+    remoteService: RemoteService,
+    errorService: ErrorService
   ) {
-    // Keep the gameState up to date by polling. If the game is currently running, estimate
-    // how much time is left in the game and poll again after that interval. If the game is not
-    // running, poll every gameStartPollInterval.
-    this.gameState.pipe(
-      map(state => {
-        if(state.type == GameStateType.RUNNING) {
-          return ((state as RunningState).minsLeftInGame() * 60_000) + 1_000;
+    // Keep the gameState up to date by polling every pollInterval
+    timer(0, environment.pollInterval).pipe(
+      mergeMap(_it => remoteService.getGameState()),
+      switchMap(state => {
+        if(state.game_running) {
+          return remoteService.getSol().pipe(
+            map(sol => new RunningState(state.game_id, sol, DateTime.now())),
+            catchError((error: Error) => {
+              if(error.message == "Game not running") {
+                return of(new NotRunningState(state.game_id));
+              } else {
+                errorService.handleError(error);
+                return of();
+              }
+            })
+            )
         } else {
-          return environment.gameStartPollInterval;
+          return of(new NotRunningState(state.game_id));
         }
-      }),
-      switchMap(nextPollMs => timer(nextPollMs))
-    ).subscribe( _value => {
-      // When the timeout completes, poll the server for updated game info and publish it
-      // to solTiming
-      this.queryGameState().subscribe(state => this.gameState.next(state));
-    });
+      })
+    ).subscribe(this.gameState);
 
-    this.queryGameState().subscribe(state => this.gameState.next(state));
+    this.gameState.subscribe(state => {
+      if(state.gameId != this.robot.getValue()?.user.gameId) {
+        this.robot.next(null);
+      }
+    });
   }
 
-  private queryGameState(): Observable<GameState> {
-    return this.remoteService.getSol().pipe(
-      map(response => {
-        if(response.status == Status.OK) {
-          return new RunningState(response as SolResponse, DateTime.now())
-        } else if(response.status == Status.FAIL) {
-          let error = response as ErrorResponse;
-          if(error.message == "Game not running") {
-            return new NotRunningState();
-          } else {
-            throw new Error(error.message);
-          }
-        } else {
-          throw new Error("Bad response");
-        }
-      }),
-      this.errorService.interceptErrors()
-    );
+  public saveRobotId(user: User, robotId: RobotId) {
+    this.gameState.pipe(take(1)).subscribe(state => {
+      this.robot.next({
+        user,
+        robotId
+      });
+    })
+  }
+
+  public clearUserRobot() {
+    this.robot.next(null);
+  }
+
+  public getUserRobot(): UserWithRobot|null {
+    return this.robot.getValue();
+  }
+
+  public watchUserRobot(): Observable<UserWithRobot|null> {
+    return this.robot;
   }
 
   public getGameState(): Observable<GameState> {

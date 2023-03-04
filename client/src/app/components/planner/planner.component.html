@@ -1,14 +1,5 @@
 <ng-container [ngSwitch]="state | async">
 
-<ng-container *ngSwitchCase="stateType.GAME_NOT_RUNNING">
-<mat-card>
-<mat-card-content>
-    <h2>Waiting for the game to start...</h2>
-    <a mat-stroked-button routerLink="/welcome"><mat-icon>arrow_back</mat-icon>Return to welcome</a>
-</mat-card-content>
-</mat-card>
-</ng-container>
-
 <ng-container *ngSwitchCase="stateType.PLANNING">
 <mat-card>
 <mat-card-header *ngIf="solMessage | async as msg">{{msg}}</mat-card-header>

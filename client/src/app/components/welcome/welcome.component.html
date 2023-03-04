@@ -1,4 +1,4 @@
-<ng-container [ngSwitch]="state|async">
+<ng-container [ngSwitch]="pageState|async">
 
 <ng-container *ngSwitchCase="stateType.SET_NAME">
     <mat-card>
@@ -15,21 +15,7 @@
     </mat-card>
 </ng-container>
 
-<ng-container *ngSwitchCase="stateType.LOAD_RID">
+<ng-container *ngSwitchCase="stateType.LOADING">
     <app-spinner></app-spinner>
-</ng-container>
-
-<ng-container *ngSwitchCase="stateType.SHOW_CONFIG">
-    <mat-card *ngIf="currConfig | async as config">
-    <mat-card-content>
-        <p>Welcome <span class="importantInfo">{{config.name}}</span>!</p>
-        <p>You will be driving <span class="importantInfo">Robot {{config.robotId}}</span>.</p>
-
-        <div id="actions">
-            <button mat-stroked-button (click)="resetConfig()">Clear Config</button>
-            <a routerLink='/planner' mat-raised-button color="accent">Start driving</a>
-        </div>
-    </mat-card-content>
-    </mat-card>
 </ng-container>
 </ng-container>

@@ -1,15 +1,16 @@
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { BehaviorSubject, combineLatest, map, Observable, ReplaySubject } from 'rxjs';
-import { Configuration } from 'src/app/models/configuration.model';
+import { BehaviorSubject, combineLatest, forkJoin, map, Observable, ReplaySubject, take } from 'rxjs';
+import { User } from 'src/app/models/user.model';
 import { RobotId } from 'src/app/models/remote.model';
-import { ConfigService } from 'src/app/services/config.service';
+import { AppState, AppStateService } from 'src/app/services/app-state.service';
+import { UserService } from 'src/app/services/user.service';
+import { GameStateService } from 'src/app/services/game-state.service';
 import { RemoteService } from 'src/app/services/remote.service';
 
 enum PageState {
   SET_NAME,
-  LOAD_RID,
-  SHOW_CONFIG
+  LOADING
 };
 
 @Component({
@@ -18,53 +19,53 @@ enum PageState {
   styleUrls: ['./welcome.component.scss']
 })
 export class WelcomeComponent {
-  protected currConfig = new ReplaySubject<Configuration>(1);
-  protected state: BehaviorSubject<PageState>;
+  protected pageState = new BehaviorSubject<PageState>(PageState.LOADING);
   protected stateType = PageState;
 
-  protected nameForm;
+  protected nameForm = new FormGroup({
+    name: new FormControl("", Validators.required)
+  });
 
   constructor(
-    private configService: ConfigService,
-    private remoteService: RemoteService
+    private userService: UserService,
+    private remoteService: RemoteService,
+    private appStateService: AppStateService,
+    private gameStateService: GameStateService
   ) {
-    const config = configService.getConfig();
-
-    let state = PageState.SET_NAME;
-    let name = '';
-    if(config) {
-      name = config.name;
-      this.currConfig.next(config);
-      state = PageState.SHOW_CONFIG;
-    }
-
-    this.state = new BehaviorSubject<PageState>(state);
-
-    this.nameForm = new FormGroup({
-      name: new FormControl(name, Validators.required)
+    gameStateService.getGameState().pipe(
+      take(1),
+      map(state => userService.getCurrUser(state.gameId))
+    ).subscribe(user => {
+      if(user) {
+        this.remoteService.getRobotAssignment(user.name, user.clientId).subscribe(
+          robotId => this.gameStateService.saveRobotId(user, robotId.robot_number));
+        appStateService.nextState(AppState.WAIT_FOR_GAME);
+      } else {
+        this.pageState.next(PageState.SET_NAME);
+      }
     });
-
-    this.currConfig.subscribe(configService.setConfig);
   }
 
   protected updateName() {
     const nameValue = this.nameForm.value.name;
+    const clientId = this.userService.getClientId();
     if(!this.nameForm.valid || !nameValue) {
       return;
     }
-    this.state.next(PageState.LOAD_RID);
+    this.pageState.next(PageState.LOADING);
 
-    this.remoteService.getRobotAssignment(nameValue).subscribe((rid) => {
-      this.state.next(PageState.SHOW_CONFIG);
-      this.currConfig.next({
-        name: nameValue!!,
-        robotId: rid.robot_number
-      });
+    forkJoin({
+      gameState: this.gameStateService.getGameState().pipe(take(1)),
+      robotId: this.remoteService.getRobotAssignment(nameValue, clientId)
+    }).subscribe(({gameState, robotId}) => {
+      const user = this.userService.setUserForGame(gameState.gameId, nameValue);
+      this.gameStateService.saveRobotId(user, robotId.robot_number);
+      this.appStateService.nextState(AppState.WAIT_FOR_GAME);
     })
   }
 
   protected resetConfig() {
-    this.configService.clearConfig();
-    this.state.next(PageState.SET_NAME);
+    this.userService.clearConfig();
+    this.pageState.next(PageState.SET_NAME);
   }
 }
