@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { BehaviorSubject, map, Observable, ReplaySubject } from 'rxjs';
+import { UserWithRobot } from './models/user.model';
 import { AppState, AppStateService } from './services/app-state.service';
 import { GameStateService } from './services/game-state.service';
 
@@ -13,7 +14,7 @@ export class AppComponent {
   protected state: Observable<AppState>
   protected stateType = AppState
 
-  protected userName = new ReplaySubject<string>(1);
+  protected userWithRobot = new ReplaySubject<UserWithRobot|null>(1);
 
   constructor(
     private appStateService: AppStateService,
@@ -21,10 +22,6 @@ export class AppComponent {
   ) {
     this.state = appStateService.getState();
 
-    gameStateService.watchUserRobot().pipe(
-      map(it => it?.user.name ?? "")
-    ).subscribe(
-      this.userName
-    );
+    gameStateService.watchUserRobot().subscribe(this.userWithRobot);
   }
 }

@@ -1,7 +1,10 @@
 <mat-toolbar color="primary">
   <div id="toolbar-container">
     <div id="app-title">Marsbot Challenge</div>
-    <div id="user-name" *ngIf="userName|async as name">{{name}}</div>
+    <div id="user-info" *ngIf="userWithRobot|async as userRobot">
+      <span id="user-name">{{userRobot.user.name}}</span>
+      &#8211;
+      <span id="user-robot">Robot {{userRobot.robotId}}</span></div>
   </div>
 </mat-toolbar>
 
