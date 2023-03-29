@@ -64,7 +64,11 @@
 
 <ng-container *ngSwitchCase="stateType.SENDING">
     <h2>Sending plan...</h2>
-    <mat-progress-bar mode="determinate" [value]="progressValue|async" id="send-progress" color="accent"></mat-progress-bar>
+    <app-mars-upload-animation
+        *ngIf="uploadAnimationTime|async as time"
+        [animationTimeSeconds]="time"
+        (animationDoneEvent)="uploadAnimationDone()"
+        ></app-mars-upload-animation>
 </ng-container>
 
 </ng-container>

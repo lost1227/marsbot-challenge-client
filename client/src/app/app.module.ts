@@ -31,6 +31,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { GameStartComponent } from './components/game-start/game-start.component';
 import { GameEndComponent } from './components/game-end/game-end.component';
+import { MarsUploadAnimationComponent } from './components/reuse/mars-upload-animation/mars-upload-animation.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +43,8 @@ import { GameEndComponent } from './components/game-end/game-end.component';
     RescueConfirmComponent,
     ErrorComponent,
     GameStartComponent,
-    GameEndComponent
+    GameEndComponent,
+    MarsUploadAnimationComponent
   ],
   imports: [
     BrowserModule,

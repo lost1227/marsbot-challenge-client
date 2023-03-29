@@ -1,0 +1,19 @@
+<mat-card>
+    <mat-card-content>
+<div id="main-container">
+    <img id="earth" src="/assets/earth.png" alt="Earth">
+    <div id="transmission-container">
+        <div id="transmission-buffer" [style.flex-grow]="transmissionPos|async"></div>
+        <img id="transmission" [style.transform]="transmissionRot|async" src="/assets/full-signal.png" alt="Transmission">
+    </div>
+    <img id="mars" src="/assets/planet.png" alt="Mars">
+</div>
+</mat-card-content>
+</mat-card>
+
+<div id="footer">
+    <div id="attributions">
+        <a href="https://www.flaticon.com/free-icons/planet" title="planet icons">Planet icons created by Victoruler - Flaticon</a>
+        <a href="https://www.flaticon.com/free-icons/wifi" title="wifi icons">Wifi icons created by Bombasticon Studio - Flaticon</a>
+    </div>
+</div>

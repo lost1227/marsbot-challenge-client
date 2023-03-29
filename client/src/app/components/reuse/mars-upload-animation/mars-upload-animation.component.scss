@@ -1,0 +1,61 @@
+// TODO: consolidate this $pageWidth with the one in app.component.scss
+$pageWidth: 740px;
+
+#main-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    width: 100%;
+    height: 80px;
+}
+
+img {
+    height: 100%;
+}
+
+#earth {
+    flex-grow: 0;
+}
+#mars {
+    flex-grow: 0;
+}
+#transmission-container {
+    flex-grow: 1;
+
+    height: 100%;
+
+    display: flex;
+}
+
+#transmission {
+    filter: invert(100%);
+    transform: rotate(90deg);
+    flex-grow: 0;
+}
+
+#footer {
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+}
+
+#attributions {
+    max-width: $pageWidth;
+    margin: auto;
+
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+#attributions > a {
+    display: block;
+    color: var(--fbc-secondary-text);
+
+    text-decoration: none;
+}
+#attributions > a:hover {
+    text-decoration: underline;
+}

@@ -27,6 +27,8 @@ export class PlannerComponent implements OnInit, OnDestroy {
   protected state = new BehaviorSubject<PageState>(PageState.PLANNING);
   protected stateType = PageState;
 
+  protected uploadAnimationTime = new ReplaySubject<number>(1);
+
   protected currPlan = new BehaviorSubject<Array<RobotPlanStep>>([]);
 
   protected moveStepsControl = new FormControl(1, Validators.min(1));
@@ -35,8 +37,6 @@ export class PlannerComponent implements OnInit, OnDestroy {
 
   protected gameState: Observable<GameState>
   protected solMessage: Observable<string>
-
-  protected progressValue = new ReplaySubject<number>(1);
 
   protected endOfGameSubscription!: Subscription
 
@@ -120,21 +120,15 @@ export class PlannerComponent implements OnInit, OnDestroy {
     return this.turnScaleControl.value ? 90 : 1;
   }
 
-  private uploadPlanResponse(response: RobotPlanResponse|RescueResponse) {
-    const steps = 15;
-    const delayTimeSeconds = response.delay;
-    const stepTime = (delayTimeSeconds * 1000) / steps;
+  protected uploadAnimationDone() {
+    this.state.next(PageState.PLANNING);
+  }
 
-    interval(stepTime).pipe(
-      take(steps),
-      map(value => value * (100 / (steps - 2))),
-      tap(console.log),
-      finalize(() => this.state.next(PageState.PLANNING))
-    ).subscribe(progress => this.progressValue.next(progress));
+  private uploadPlanResponse(response: RobotPlanResponse|RescueResponse) {
+    this.uploadAnimationTime.next(response.delay);
   }
 
   protected sendCurrPlan(){
-    this.progressValue.next(0);
     this.state.next(PageState.SENDING);
 
     const turnScale = 1;
@@ -159,7 +153,6 @@ export class PlannerComponent implements OnInit, OnDestroy {
       if(!confirmed)
         return;
 
-      this.progressValue.next(0);
       this.state.next(PageState.SENDING);
 
       this.currPlan.next([]);
