@@ -63,7 +63,8 @@
 </ng-container>
 
 <ng-container *ngSwitchCase="stateType.SENDING">
-    <h2>Sending plan...</h2>
+    <h2 *ngIf="!sendingRescue">Sending plan...</h2>
+    <h2 *ngIf="sendingRescue">Requesting rescue...</h2>
     <app-mars-upload-animation
         *ngIf="uploadAnimationTime|async as time"
         [animationTimeSeconds]="time"

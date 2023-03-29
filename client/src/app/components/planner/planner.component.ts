@@ -28,6 +28,7 @@ export class PlannerComponent implements OnInit, OnDestroy {
   protected stateType = PageState;
 
   protected uploadAnimationTime = new ReplaySubject<number>(1);
+  protected sendingRescue = false;
 
   protected currPlan = new BehaviorSubject<Array<RobotPlanStep>>([]);
 
@@ -129,6 +130,7 @@ export class PlannerComponent implements OnInit, OnDestroy {
   }
 
   protected sendCurrPlan(){
+    this.sendingRescue = false;
     this.state.next(PageState.SENDING);
 
     const turnScale = 1;
@@ -153,6 +155,7 @@ export class PlannerComponent implements OnInit, OnDestroy {
       if(!confirmed)
         return;
 
+      this.sendingRescue = true;
       this.state.next(PageState.SENDING);
 
       this.currPlan.next([]);
