@@ -1,6 +1,6 @@
 // For format details, see https://aka.ms/devcontainer.json
 {
-	"name": "Attendance-Manager Web (Angular)",
+	"name": "Marsbot-Client Web (Angular)",
 	"dockerComposeFile": [
 		"../../docker-compose.yml"
 	],
