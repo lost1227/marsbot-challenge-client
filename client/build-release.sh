@@ -5,10 +5,13 @@ set -ex
 SCRIPT_DIR=$(dirname $(readlink -f $0))
 cd ${SCRIPT_DIR}
 
+./download-fonts.sh
+
 rm -rf release
 mkdir release
 
 git ls-files . | cpio -pdm release
+cp -r src/assets/fonts release/src/assets/
 
 pushd release
 docker run --rm --entrypoint "sh" \
