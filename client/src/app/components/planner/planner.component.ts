@@ -95,7 +95,7 @@ export class PlannerComponent implements OnInit, OnDestroy {
   protected addTurn(dirstr: string) {
     let value = Number(this.turnStepsControl.value);
     let dir = dirstr as Direction;
-    if(this.moveStepsControl.invalid || !value)
+    if(this.turnStepsControl.invalid || !value)
       return;
 
     value = value / this.getTurnScale();
