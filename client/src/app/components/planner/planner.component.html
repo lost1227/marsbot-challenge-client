@@ -23,7 +23,7 @@
     <h3 class="section-header">Turn</h3>
     <div class="section-body">
         <mat-form-field>
-            <mat-label>Steps</mat-label>
+            <mat-label>{{shouldShowDegrees() ? "Degrees" : "Steps"}}</mat-label>
             <input matInput [formControl]="turnStepsControl">
             <mat-error *ngIf="turnStepsControl.invalid">{{getTurnErrorMessage()}}</mat-error>
         </mat-form-field>
