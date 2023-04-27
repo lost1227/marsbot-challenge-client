@@ -10,6 +10,7 @@
         <mat-form-field>
             <mat-label>Steps</mat-label>
             <input matInput [formControl]="moveStepsControl">
+            <mat-error *ngIf="moveStepsControl.invalid">{{getMoveErrorMessage()}}</mat-error>
         </mat-form-field>
         <button mat-fab color="accent" (click)="addMove(dirs.UP)">
             <mat-icon>arrow_upward</mat-icon>
@@ -24,6 +25,7 @@
         <mat-form-field>
             <mat-label>Steps</mat-label>
             <input matInput [formControl]="turnStepsControl">
+            <mat-error *ngIf="turnStepsControl.invalid">{{getTurnErrorMessage()}}</mat-error>
         </mat-form-field>
         <button mat-fab color="accent" (click)="addTurn(dirs.LEFT)">
             <mat-icon>arrow_back</mat-icon>

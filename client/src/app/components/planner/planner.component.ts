@@ -89,11 +89,44 @@ export class PlannerComponent implements OnInit, OnDestroy {
   }
 
   private validateTurnStepsMax(stepsControl: AbstractControl) {
-    const max = (this.turnScaleControl?.value) ? 360 : 4;
+    let max = this.VALID_VALUE_RANGES.turn_steps.max;
+    if(this.turnScaleControl?.value) {
+      max *= 90;
+    }
+
     if(stepsControl.value > max) {
-      return {turnStepsMax: {value: stepsControl.value, max: max}};
+      return {max: {value: stepsControl.value, max: max}};
     }
     return null;
+  }
+
+  protected getMoveErrorMessage() {
+    const errors = this.moveStepsControl.errors;
+    if(errors) {
+      console.log(errors);
+      if(errors['min']) {
+        return "Value must be positive";
+      }
+      if(errors['max']) {
+        return `Value may be at most ${this.VALID_VALUE_RANGES.move_steps.max}`
+      }
+    }
+
+    return "Invalid input"
+  }
+
+  protected getTurnErrorMessage() {
+    const errors = this.turnStepsControl.errors;
+    if(errors) {
+      if(errors['min']) {
+        return "Value must be positive";
+      }
+      if(errors['max']) {
+        return `Value may be at most ${errors['max']['max']}`
+      }
+    }
+
+    return "Invalid input"
   }
 
   protected addMove(dirstr: string) {
