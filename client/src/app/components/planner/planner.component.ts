@@ -1,10 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormControlState, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, finalize, interval, map, Observable, ReplaySubject, Subscription, take, tap, timer } from 'rxjs';
+import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Observable, ReplaySubject, Subscription, timer } from 'rxjs';
 import { RescueResponse, RobotPlanResponse } from 'src/app/models/remote.model';
 import { Direction, GrabStep, MoveStep, RemoteRobotPlan, RobotPlanStep, TurnStep } from 'src/app/models/robot-plan.model';
-import { UserService } from 'src/app/services/user.service';
 import { GameState, GameStateService, GameStateType, RunningState } from 'src/app/services/game-state.service';
 import { RemoteService } from 'src/app/services/remote.service';
 import { RescueConfirmComponent } from './rescue-confirm/rescue-confirm.component';
@@ -22,6 +21,11 @@ enum PageState {
   styleUrls: ['./planner.component.scss']
 })
 export class PlannerComponent implements OnInit, OnDestroy {
+  private readonly VALID_VALUE_RANGES = {
+    move_steps: {min: 0, max: 15},
+    turn_steps: {min: 0, max: 4}
+  };
+
   protected readonly dirs = Direction;
 
   protected state = new BehaviorSubject<PageState>(PageState.PLANNING);
@@ -32,8 +36,8 @@ export class PlannerComponent implements OnInit, OnDestroy {
 
   protected currPlan = new BehaviorSubject<Array<RobotPlanStep>>([]);
 
-  protected moveStepsControl = new FormControl(1, Validators.min(1));
-  protected turnStepsControl = new FormControl(1, Validators.min(1));
+  protected moveStepsControl = new FormControl(1, [Validators.pattern('\\d+'), Validators.min(this.VALID_VALUE_RANGES.move_steps.min), Validators.max(this.VALID_VALUE_RANGES.move_steps.max)]);
+  protected turnStepsControl = new FormControl(1, [Validators.pattern('\\d+'), Validators.min(this.VALID_VALUE_RANGES.turn_steps.min), this.validateTurnStepsMax.bind(this)]);
   protected turnScaleControl = new FormControl();
 
   protected gameState: Observable<GameState>
@@ -84,6 +88,14 @@ export class PlannerComponent implements OnInit, OnDestroy {
     this.endOfGameSubscription.unsubscribe();
   }
 
+  private validateTurnStepsMax(stepsControl: AbstractControl) {
+    const max = (this.turnScaleControl?.value) ? 360 : 4;
+    if(stepsControl.value > max) {
+      return {turnStepsMax: {value: stepsControl.value, max: max}};
+    }
+    return null;
+  }
+
   protected addMove(dirstr: string) {
     let value = Number(this.moveStepsControl.value);
     let dir = dirstr as Direction;
@@ -114,7 +126,7 @@ export class PlannerComponent implements OnInit, OnDestroy {
   }
 
   protected shouldShowDegrees() {
-    return !!this.turnScaleControl.value;
+    return !!this.turnScaleControl?.value;
   }
 
   protected getTurnScale() {
