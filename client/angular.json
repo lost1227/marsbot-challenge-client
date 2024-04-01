@@ -77,10 +77,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "marsbot-challenge-client:build:production"
+              "buildTarget": "marsbot-challenge-client:build:production"
             },
             "development": {
-              "browserTarget": "marsbot-challenge-client:build:development"
+              "buildTarget": "marsbot-challenge-client:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -88,7 +88,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "marsbot-challenge-client:build"
+            "buildTarget": "marsbot-challenge-client:build"
           }
         },
         "test": {
