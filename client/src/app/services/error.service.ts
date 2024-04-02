@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { catchError, map, Observable, of, retry } from 'rxjs';
 import { Status } from '../models/remote.model';
 import { AppState, AppStateService } from './app-state.service';
+import { HttpEvent, HttpEventType } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -25,15 +26,16 @@ export class ErrorService {
 
   public interceptErrors(catchErrors: boolean = true) {
     const errService = this;
-    return function <T>(source: Observable<T>): Observable<T> {
+    return function (source: Observable<HttpEvent<any>>): Observable<HttpEvent<any>> {
       const intercepted = source.pipe(
-        map(value => {
-          let anyv = value as any;
-          if(anyv instanceof Object && anyv["status"] && anyv["status"] == Status.FAIL) {
-            console.error(anyv["status"]);
-            throw new Error(anyv['message'] ?? ErrorService.unknownErrorMsg);
+        map(response => {
+          if(response.type == HttpEventType.Response) {
+            let body = response.body;
+            if(body instanceof Object && body["status"] && body["status"] == Status.FAIL) {
+              throw new Error(body['message'] ?? ErrorService.unknownErrorMsg);
+            }
           }
-          return value;
+          return response;
         }),
         retry(0)
       );

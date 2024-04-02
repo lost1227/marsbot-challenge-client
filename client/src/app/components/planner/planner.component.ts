@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AbstractControl, FormControl, FormControlState, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Observable, ReplaySubject, Subscription, timer } from 'rxjs';
+import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Observable, ReplaySubject, Subscription, take, timer } from 'rxjs';
 import { RescueResponse, RobotPlanResponse } from 'src/app/models/remote.model';
 import { Direction, GrabStep, MoveStep, RemoteRobotPlan, RobotPlanStep, TurnStep } from 'src/app/models/robot-plan.model';
 import { GameState, GameStateService, GameStateType, RunningState } from 'src/app/services/game-state.service';
@@ -183,12 +183,14 @@ export class PlannerComponent implements OnInit, OnDestroy {
 
     this.currPlan.next([]);
 
-    const user = this.gameStateService.getUserRobot();
-    if(!user) {
-      return;
-    }
+    this.gameStateService.getUserRobot().pipe(take(1)).subscribe((user) => {
+      if(!user) {
+        console.error("No user configured!");
+        return;
+      }
 
-    this.remoteService.sendPlan(user.robotId, plan).subscribe(this.uploadPlanResponse.bind(this));
+      this.remoteService.sendPlan(user.robotId, plan).subscribe(response => this.uploadPlanResponse(response));
+    });
   }
 
   protected requestRescue() {
@@ -205,12 +207,14 @@ export class PlannerComponent implements OnInit, OnDestroy {
 
       this.currPlan.next([]);
 
-      const user = this.gameStateService.getUserRobot();
-      if(!user) {
-        return;
-      }
+      this.gameStateService.getUserRobot().pipe(take(1)).subscribe(user => {
+        if(!user) {
+          console.error("No user configured!");
+          return;
+        }
 
-      this.remoteService.sendRescue(user.robotId).subscribe(this.uploadPlanResponse.bind(this));
+        this.remoteService.sendRescue(user.robotId).subscribe(response => this.uploadPlanResponse(response));
+      });
     })
   }
 }

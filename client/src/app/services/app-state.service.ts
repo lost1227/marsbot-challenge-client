@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 export enum AppState {
+  ASSIGN_ROBOT,
   NEW_USER,
   WAIT_FOR_GAME,
   PLANNING,
@@ -14,7 +15,7 @@ export enum AppState {
 })
 export class AppStateService {
 
-  private readonly state = new BehaviorSubject<AppState>(AppState.NEW_USER);
+  private readonly state = new BehaviorSubject<AppState>(AppState.ASSIGN_ROBOT);
 
   constructor() {
   }

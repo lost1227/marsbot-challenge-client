@@ -26,6 +26,6 @@ export class ErrorComponent {
   }
 
   protected restart() {
-    this.appStateService.nextState(AppState.NEW_USER);
+    this.appStateService.nextState(AppState.ASSIGN_ROBOT);
   }
 }
