@@ -9,7 +9,7 @@ import { RobotId } from '../models/remote.model';
 @Injectable({
   providedIn: 'root'
 })
-export class UserService {
+export class ClientService {
   private storage = environment.configStorage;
   constructor() { }
 
@@ -22,17 +22,14 @@ export class UserService {
     return clientId;
   }
 
-  public getCurrUser(gameId: string): User|null {
+  public getPersistedUser(): User|null {
     const clientId = this.getClientId();
 
-    let lastGameId = this.storage.getItem("gameId");
-    if(!lastGameId || lastGameId != gameId) {
-      this.clearConfig();
-      return null;
-    }
-
+    let gameId = this.storage.getItem("gameId");
     let name = this.storage.getItem("name");
-    if(name == null) {
+
+    if(!gameId || !name) {
+      this.clearStorage();
       return null;
     }
 
@@ -43,7 +40,7 @@ export class UserService {
     };
   }
 
-  public setUserForGame(gameId: string, name: string): User {
+  public persistUserForGame(gameId: string, name: string): User {
     const clientId = this.getClientId();
     this.storage.setItem("gameId", gameId);
     this.storage.setItem("name", name);
@@ -55,7 +52,7 @@ export class UserService {
     };
   }
 
-  public clearConfig() {
+  public clearStorage() {
     this.storage.removeItem("gameId");
     this.storage.removeItem("name");
   }

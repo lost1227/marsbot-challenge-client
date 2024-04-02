@@ -1,15 +1,18 @@
 <mat-toolbar color="primary">
   <div id="toolbar-container">
     <div id="app-title">Marsbot Challenge</div>
-    <div id="user-info" *ngIf="userWithRobot|async as userRobot">
-      <span id="user-name">{{userRobot.user.name}}</span>
-      &#8211;
-      <span id="user-robot">Robot {{userRobot.robotId}}</span></div>
+    <div id="user-info">
+      <ng-container *ngIf="user | async as user">
+        <span id="user-name" >{{user.name}}</span>
+        &#8211;
+      </ng-container>
+      <span id="user-robot" *ngIf="robot | async as robotId" (click)="refreshRobot()">Robot {{robotId}}</span></div>
   </div>
 </mat-toolbar>
 
 <div id="mainPage">
   <ng-container [ngSwitch]="state|async">
+    <app-assign-robot *ngSwitchCase="stateType.ASSIGN_ROBOT"></app-assign-robot>
     <app-welcome *ngSwitchCase="stateType.NEW_USER"></app-welcome>
     <app-game-start *ngSwitchCase="stateType.WAIT_FOR_GAME"></app-game-start>
     <app-planner *ngSwitchCase="stateType.PLANNING"></app-planner>

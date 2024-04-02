@@ -1,10 +1,11 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { ErrorResponse, GameStateResponse, RescueResponse, RobotAssignmentResponse, RobotId, RobotPlanResponse, SolResponse } from '../models/remote.model';
 import { RemoteRobotPlan } from '../models/robot-plan.model';
 import { ErrorService } from './error.service';
+import { CATCH_ERRORS } from '../http-interceptors/error-interceptor';
 
 @Injectable({
   providedIn: 'root'
@@ -12,26 +13,26 @@ import { ErrorService } from './error.service';
 export class RemoteService {
 
   constructor(
-    private httpClient: HttpClient,
-    private errorService: ErrorService
+    private httpClient: HttpClient
   ) {}
 
-  public getRobotAssignment(userName: string, clientId: string): Observable<RobotAssignmentResponse> {
-    let params = new HttpParams().set('name', userName).set('clientId', clientId);
+  public getRobotAssignment(clientId: string, catchErrors: boolean = true): Observable<RobotAssignmentResponse> {
+    let params = new HttpParams().set('clientId', clientId);
     return this.httpClient
-      .get<RobotAssignmentResponse>(environment.serverAddress + "robot_assignment", {params})
-      .pipe(this.errorService.interceptErrors());
+      .get<RobotAssignmentResponse>(environment.serverAddress + "robot_assignment", {
+        params,
+        context: new HttpContext().set(CATCH_ERRORS, false)
+      });
   }
 
-  public getGameState(): Observable<GameStateResponse> {
+  public getGameState(clientId: string): Observable<GameStateResponse> {
+    let params = new HttpParams().set('clientId', clientId);
     return this.httpClient
-      .get<GameStateResponse>(environment.serverAddress + "game_state")
-      .pipe(this.errorService.interceptErrors());
+      .get<GameStateResponse>(environment.serverAddress + "game_state", {params});
   }
 
   public getSol(): Observable<SolResponse> {
-    return this.httpClient.get<SolResponse>(environment.serverAddress + "sol").pipe(
-      this.errorService.interceptErrors(false));
+    return this.httpClient.get<SolResponse>(environment.serverAddress + "sol");
   }
 
   public sendPlan(robot: RobotId, plan: RemoteRobotPlan): Observable<RobotPlanResponse> {
@@ -40,7 +41,7 @@ export class RemoteService {
     body.set('plan', JSON.stringify(plan));
     return this.httpClient.post<RobotPlanResponse>(environment.serverAddress + "plan", body.toString(), {
       headers: new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded')
-    }).pipe(this.errorService.interceptErrors());
+    });
   }
 
   public sendRescue(robot: RobotId): Observable<RescueResponse> {
@@ -48,6 +49,6 @@ export class RemoteService {
     body.set('robot', robot);
     return this.httpClient.post<RescueResponse>(environment.serverAddress + "plan", body.toString(), {
       headers: new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded')
-    }).pipe(this.errorService.interceptErrors());
+    });
   }
 }

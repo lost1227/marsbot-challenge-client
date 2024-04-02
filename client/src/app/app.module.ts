@@ -32,10 +32,12 @@ import { MatDividerModule } from '@angular/material/divider';
 import { GameStartComponent } from './components/game-start/game-start.component';
 import { GameEndComponent } from './components/game-end/game-end.component';
 import { MarsUploadAnimationComponent } from './components/reuse/mars-upload-animation/mars-upload-animation.component';
+import { AssignRobotComponent } from './components/assign-robot/assign-robot.component';
 
 @NgModule({
   declarations: [
     AppComponent,
+    AssignRobotComponent,
     WelcomeComponent,
     SpinnerComponent,
     PlannerComponent,
